@@ -11,7 +11,7 @@ module Parking
     integer counter; //each hour is 500 clocks
     integer uni_capacity;
 
-    assign hour = hourBase8 + 8;
+    assign hour = (hourBase8 + 8)%24;
 
     integer enteredUniCarCount, exitedUniCarCount, enteredFreeCarCount, exitedFreeCarCount;
     integer tempUni, tempFree;
@@ -58,43 +58,49 @@ module Parking
                     end
                 end
             end
-        end
 
-        // update capacity
-        if (counter == 0) begin
-            if (hourBase8 == 6 || hourBase8 == 7)
-                uni_capacity = uni_capacity - 50;
-            else if (hourBase8 == 8)
-                uni_capacity = 200;
-        end
+            // update capacity
+            if (counter == 0) begin
+                if (hourBase8 == 6 || hourBase8 == 7)
+                    uni_capacity = uni_capacity - 50;
+                else if (hourBase8 == 8)
+                    uni_capacity = 200;
 
-        // update car counts and error signals
-        ja_nist = 0;
-        faulty_exit = 0;
-        tempUni = enteredUniCarCount - exitedUniCarCount;
-        tempFree = enteredFreeCarCount - exitedFreeCarCount;
-        if (tempUni > uni_capacity) begin
-            enteredUniCarCount = enteredUniCarCount - 1;
-            ja_nist = 1;
+                // free uni cars if they don't fit
+                if (uni_parked_car > uni_capacity) begin
+                    enteredFreeCarCount = enteredFreeCarCount + (uni_parked_car - uni_capacity);
+                    enteredUniCarCount = enteredUniCarCount - (uni_parked_car - uni_capacity);
+                end
+            end
+
+            // update car counts and error signals
+            ja_nist = 0;
+            faulty_exit = 0;
+            tempUni = enteredUniCarCount - exitedUniCarCount;
+            tempFree = enteredFreeCarCount - exitedFreeCarCount;
+            if (tempUni > uni_capacity) begin
+                enteredUniCarCount = exitedUniCarCount + uni_capacity;
+                ja_nist = 1;
+            end
+            else if (tempUni < 0) begin
+                exitedUniCarCount = enteredUniCarCount;
+                faulty_exit = 1;
+            end
+            else if (tempFree > TOTAL_CAPACITY - uni_capacity) begin
+                enteredFreeCarCount = exitedFreeCarCount + TOTAL_CAPACITY - uni_capacity;
+                ja_nist = 1;
+            end
+            else if (tempFree < 0) begin
+                exitedFreeCarCount = enteredFreeCarCount;
+                faulty_exit = 1;
+            end
+            uni_parked_car = enteredUniCarCount - exitedUniCarCount;
+            free_parked_car = enteredFreeCarCount - exitedFreeCarCount;
+            uni_vacated_space = uni_capacity - uni_parked_car;
+            free_vacated_space = TOTAL_CAPACITY - uni_capacity - free_parked_car;
+            uni_is_vacated_space = (uni_vacated_space != 0);
+            free_is_vacated_space = (free_vacated_space != 0);
         end
-        else if (tempUni < 0) begin
-            exitedUniCarCount = exitedUniCarCount - 1;
-            faulty_exit = 1;
-        end
-        else if (tempFree > TOTAL_CAPACITY - uni_capacity) begin
-            enteredFreeCarCount = enteredFreeCarCount - 1;
-            ja_nist = 1;
-        end
-        else if (tempFree < 0) begin
-            exitedFreeCarCount = exitedFreeCarCount - 1;
-            faulty_exit = 1;
-        end
-        uni_parked_car = enteredUniCarCount - exitedUniCarCount;
-        free_parked_car = enteredFreeCarCount - exitedFreeCarCount;
-        uni_vacated_space = uni_capacity - uni_parked_car;
-        free_vacated_space = TOTAL_CAPACITY - uni_capacity - free_parked_car;
-        uni_is_vacated_space = (uni_vacated_space != 0);
-        free_is_vacated_space = (free_vacated_space != 0);
     end
 
     always @(negedge car_entered) begin
