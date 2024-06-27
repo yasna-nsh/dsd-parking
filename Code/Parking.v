@@ -8,6 +8,7 @@ module Parking
     localparam CLOCKS_IN_HOUR = 500;
     localparam TOTAL_CAPACITY = 700;
     reg [4:0] hourBase8;
+    reg clock_edge_det;
     integer counter; //each hour is 500 clocks
     integer uni_capacity;
 
@@ -36,7 +37,8 @@ module Parking
             exitedFreeCarCount = 0;
         end
         else begin
-            if (clock) begin
+            // increase time at posedge of clock
+            if (clock && !clock_edge_det) begin
                 counter = (counter + 1) % CLOCKS_IN_HOUR;
                 if (counter == 0) begin
                     hourBase8 = (hourBase8 + 1) % 24;
@@ -61,8 +63,10 @@ module Parking
 
             // update capacity
             if (counter == 0) begin
-                if (hourBase8 == 6 || hourBase8 == 7)
-                    uni_capacity = uni_capacity - 50;
+                if (hourBase8 == 6)
+                    uni_capacity = 450;
+                else if (hourBase8 == 7)
+                    uni_capacity = 400;
                 else if (hourBase8 == 8)
                     uni_capacity = 200;
 
@@ -101,6 +105,8 @@ module Parking
             uni_is_vacated_space = (uni_vacated_space != 0);
             free_is_vacated_space = (free_vacated_space != 0);
         end
+
+        clock_edge_det = clock;
     end
 
     always @(negedge car_entered) begin
@@ -115,4 +121,3 @@ module Parking
     
     
 endmodule
-
