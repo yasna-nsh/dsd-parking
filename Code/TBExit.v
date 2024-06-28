@@ -1,15 +1,16 @@
 /*
-This test is to check seperation in uni and free spaces and check if the parking is getting filled correctly.
+This module is a test for how the capacity of free cars increases from 13:00 to 16:00.
+Each hour is 500 clocks.
 */
 
-module TB1;
+module TBExit;
 
     reg clock;
 
     initial
         clock = 0;
     always
-        #5 clock = !clock;
+        #1 clock = !clock;
 
     reg reset, car_entered, is_uni_car_entered, car_exited, is_uni_car_exited;
     wire [4:0] hour;
@@ -21,7 +22,6 @@ module TB1;
                             uni_is_vacated_space, free_is_vacated_space, ja_nist, faulty_exit);
 
 
-    integer i;
     initial begin
         reset = 1;
         car_entered = 0;
@@ -29,19 +29,51 @@ module TB1;
         car_exited = 0;
         is_uni_car_exited = 0;
 
-        #10
+        #2
         reset = 0;
+        
+        // test for uni car in parking, but free car exits
+        #1
+        car_entered = 1;
+        is_uni_car_entered = 1;
 
-        for (i = 0; i < 1000; i = i + 1) begin
-            #5
-            car_entered = 1;
-            is_uni_car_entered = (i%3==1);
-            #5
-            car_entered = 0;
-        end
+        #1
+        car_entered = 0;
+        car_exited = 1;
+        is_uni_car_exited = 0;
+        
+        #1
+        car_exited = 0;
 
+        #1
+        car_exited = 1;
+        is_uni_car_exited = 1;
+
+        #1 
+        car_exited = 0;
+
+        // test for free car in parking, but uni car exits
+        #1
+        car_entered = 1;
+        is_uni_car_entered = 0;
+        
+        #1
+        car_entered = 0;
+        car_exited = 1;
+        is_uni_car_exited = 1;
+        
+        #1
+        car_exited = 0;
+
+        #1
+        car_exited = 1;
+        is_uni_car_exited = 0;
+
+        #1 
+        car_exited = 0;
+
+        #10
         $stop();
-
     end
 
     initial begin

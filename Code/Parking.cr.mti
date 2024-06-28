@@ -5,6 +5,20 @@ Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 
 Top level modules:
 	TB1
 
+} {} {}} D:/d/t4/dsd/project/Code/Parking.v {1 {vlog -work work -stats=none D:/d/t4/dsd/project/Code/Parking.v
+Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+-- Compiling module Parking
+
+Top level modules:
+	Parking
+
+} {} {}} D:/d/t4/dsd/project/Code/TBExit.v {1 {vlog -work work -stats=none D:/d/t4/dsd/project/Code/TBExit.v
+Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+-- Compiling module TBExit
+
+Top level modules:
+	TBExit
+
 } {} {}} D:/d/t4/dsd/project/Code/TBFreeCapacityIncrease.v {1 {vlog -work work -stats=none D:/d/t4/dsd/project/Code/TBFreeCapacityIncrease.v
 Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
 -- Compiling module TBFreeCapacityIncrease

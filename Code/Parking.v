@@ -8,7 +8,7 @@ module Parking
     localparam CLOCKS_IN_HOUR = 500;
     localparam TOTAL_CAPACITY = 700;
     reg [4:0] hourBase8;
-    reg clock_edge_det;
+    reg clock_edge_det, car_entered_det, car_exited_det;
     integer counter; //each hour is 500 clocks
     integer uni_capacity;
 
@@ -17,7 +17,7 @@ module Parking
     integer enteredUniCarCount, exitedUniCarCount, enteredFreeCarCount, exitedFreeCarCount;
     integer tempUni, tempFree;
 
-    always @(posedge reset or posedge clock or enteredUniCarCount or enteredFreeCarCount or exitedUniCarCount or exitedFreeCarCount) begin
+    always @(reset or clock or car_entered or car_exited) begin
         if (reset) begin
             hourBase8 = 5'b0;
             counter = 0;
@@ -77,6 +77,16 @@ module Parking
                 end
             end
 
+            if (car_entered_det && !car_entered) begin
+                if (is_uni_car_entered) enteredUniCarCount = enteredUniCarCount + 1;
+                else enteredFreeCarCount = enteredFreeCarCount + 1;
+            end
+
+            if (car_exited_det && !car_exited) begin
+                if (is_uni_car_exited) exitedUniCarCount = exitedUniCarCount + 1;
+                else exitedFreeCarCount = exitedFreeCarCount + 1;
+            end
+
             // update car counts and error signals
             ja_nist = 0;
             faulty_exit = 0;
@@ -107,17 +117,8 @@ module Parking
         end
 
         clock_edge_det = clock;
+        car_entered_det = car_entered;
+        car_exited_det = car_exited;
     end
-
-    always @(negedge car_entered) begin
-        if (is_uni_car_entered) enteredUniCarCount = enteredUniCarCount + 1;
-        else enteredFreeCarCount = enteredFreeCarCount + 1;
-    end
-
-    always @(negedge car_exited) begin
-        if (is_uni_car_exited) exitedUniCarCount = exitedUniCarCount + 1;
-        else exitedFreeCarCount = exitedFreeCarCount + 1;
-    end
-    
     
 endmodule
